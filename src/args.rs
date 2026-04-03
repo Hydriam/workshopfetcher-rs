@@ -13,26 +13,21 @@ pub struct WorkshopFetcherArgs{
 #[derive(Debug, Subcommand)]
 pub enum EntityType {
     // Download mods
-    Mods(ModsCommand),
+    Download(DownloadCommand),
     Reset,
-    // Download collections
-    /*
-    TODO
-    Collection(CollectionCommand)
-    */
 }
 #[derive(Debug, Args)]
-pub struct ModsCommand {
+pub struct DownloadCommand {
     #[clap(subcommand)]
-    pub command: ModsSubcommand
+    pub command: DownloadSubcommand
 }
 #[derive(Debug, Subcommand)]
-pub enum ModsSubcommand {
-    // download the mod using steamcmd
-    Download(DownloadMod)
+pub enum DownloadSubcommand {
+    Mods(DownloadMods)
+    // TODO: Collection downloading
 }
 #[derive(Debug, Args)]
-pub struct DownloadMod {
+pub struct DownloadMods {
     #[arg(short,long, required = true)]
     pub game_id: String,
     #[arg(short,long, required = true, num_args = 1..)]

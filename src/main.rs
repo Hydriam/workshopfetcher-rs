@@ -4,14 +4,14 @@ mod commands;
 use args::WorkshopFetcherArgs;
 use clap::Parser;
 
-use crate::{args::{EntityType}, commands::mods_subcommand::run_mods, commands::reset_subcommand::run_reset};
+use crate::{args::{EntityType}, commands::download_subcommand::run_download, commands::reset_subcommand::run_reset};
 
 fn main() {
     let args = WorkshopFetcherArgs::parse();
 
     match args.entity_type {
-        EntityType::Mods(mods) => {
-            run_mods(mods.command);
+        EntityType::Download(download) => {
+            run_download(download.command);
         }
         EntityType::Reset => {
             match run_reset() {

@@ -3,8 +3,8 @@ use std::{
     io
 };
 use std::process::Command;
-use crate::args::{DownloadMod, ModsSubcommand};
-pub fn handle_download(cmd: DownloadMod) -> io::Result<()> {
+use crate::args::{DownloadMods, DownloadSubcommand};
+pub fn handle_download_mods(cmd: DownloadMods) -> io::Result<()> {
     /*println!("Game ID: {}", cmd.game_id);
     println!("Mod IDs: {:?}", cmd.mod_ids); */
     if !Path::new("./steamcmd/steamcmd.sh").exists() {
@@ -26,16 +26,15 @@ pub fn handle_download(cmd: DownloadMod) -> io::Result<()> {
     command.stdout(std::process::Stdio::inherit());
     command.stderr(std::process::Stdio::inherit());
 
-    let status = command.status()?;
+    command.status()?;
+    println!("If steamcmd reported success the mods should be under ~/.steam/steam/steamapps/workshop/content/{}", cmd.game_id);
     return Ok(())
 }
-pub fn run_mods(subcommand: ModsSubcommand) {
+pub fn run_download(subcommand: DownloadSubcommand) {
     match subcommand {
-        ModsSubcommand::Download(cmd) => {
-            match handle_download(cmd) {
-                Ok(_) => println!("Steamcmd is succesfully reseted."),
-                // TODO: Test if the error handling works good
-                Err(error) => println!("Error: {:?}", error)
+        DownloadSubcommand::Mods(cmd) => {
+            if let Err(error) = handle_download_mods(cmd) {
+                println!("Error: {:?}", error)
             }
         }
     }
