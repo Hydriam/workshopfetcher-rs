@@ -11,13 +11,20 @@ For now the app can do two things:
 ### Reset
 It basically removes and then installs steamcmd, run it if you encounter any issues with steamcmd.
 ### Download Mods
-This one downloads specifed mods, to find the mod and game appid refer to this image:
-![alt text](workshopfetcher.png)
+It downloads specifed mods, to find the mod and game appid refer to this image:
+![workshopfetcher.png](workshopfetcher.png)
 So for this mod the full command would be
 ```
 cargo run download mods --game-id 108600 --mod-ids 3693258802
 ```
 In --mod-ids you can put multiple mods
+### Download Collection
+It downloads specifed collection, to find the collection and game appid refer to this image:
+![workshopfetcher-collection.png](workshopfetcher-collection.png)
+So for this collection the full command would be
+```
+cargo run download collection --game-id 108600 --collection-url https://steamcommunity.com/sharedfiles/filedetails/?id=2490220997
+```
 ## Building
 To run:
 ```
@@ -25,3 +32,5 @@ git clone https://github.com/Hydriam/workshopfetcher-rs
 cd workshopfetcher-rs
 cargo run
 ```
+## AI Usage
+The only thing created with AI is the regex which extracts mod links from collection source page.

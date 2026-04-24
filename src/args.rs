@@ -23,7 +23,8 @@ pub struct DownloadCommand {
 }
 #[derive(Debug, Subcommand)]
 pub enum DownloadSubcommand {
-    Mods(DownloadMods)
+    Mods(DownloadMods),
+    Collection(DownloadCollection)
     // TODO: Collection downloading
 }
 #[derive(Debug, Args)]
@@ -32,4 +33,11 @@ pub struct DownloadMods {
     pub game_id: String,
     #[arg(short,long, required = true, num_args = 1..)]
     pub mod_ids: Vec<String>
+}
+#[derive(Debug, Args)]
+pub struct DownloadCollection {
+    #[arg(short,long, required = true)]
+    pub collection_url: String,
+    #[arg(short,long, required = true)]
+    pub game_id: String,
 }
