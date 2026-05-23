@@ -7,9 +7,8 @@ This app can download mods from steam workshop using steamcmd without owning the
 
 **You need 32 bit version of glibc installed beacuse steamcmd needs it**
 ## Usage
-For now the app can do two things:
 ### Reset
-It basically removes and then installs steamcmd, run it if you encounter any issues with steamcmd.
+It basically removes and then downloads steamcmd, run it if you encounter any issues with steamcmd.
 ### Download Mods
 It downloads specifed mods, to find the mod and game appid refer to this image:
 ![workshopfetcher.png](workshopfetcher.png)
