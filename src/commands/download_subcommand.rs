@@ -1,5 +1,5 @@
 use std::{
-    io, path::Path, vec
+    env, io, path::Path, vec
 };
 use regex::Regex;
 use std::process::Command;
@@ -14,6 +14,8 @@ pub fn handle_download_mods(game_id: String, mod_ids: Vec<String>) -> io::Result
         ));
     }
     let mut command = Command::new("./steamcmd/steamcmd.sh");
+    command.arg("+force_install_dir");
+    command.arg("./workdir");
     command.arg("+login");
     command.arg("anonymous");
 
@@ -27,7 +29,7 @@ pub fn handle_download_mods(game_id: String, mod_ids: Vec<String>) -> io::Result
     command.stderr(std::process::Stdio::inherit());
 
     command.status()?;
-    println!("If steamcmd reported success the mods should be under ~/.steam/steam/steamapps/workshop/content/{}", &game_id);
+    println!("If steamcmd reported success the mods should be under {}/steacmd/workdir/steamapps/workshop/content/{}", env::current_dir()?.display() ,&game_id);
     return Ok(())
 }
 pub fn handle_download_collection(cmd: DownloadCollection) -> io::Result<()> {

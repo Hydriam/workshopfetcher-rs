@@ -9,6 +9,7 @@ This app can download mods from steam workshop using steamcmd without owning the
 ## Usage
 ### Reset
 It basically removes and then downloads steamcmd, run it if you encounter any issues with steamcmd.
+Reset will also remove downloaded mods if they arent moved to desired directory.
 ### Download Mods
 It downloads specifed mods, to find the mod and game appid refer to this image:
 ![workshopfetcher.png](workshopfetcher.png)
