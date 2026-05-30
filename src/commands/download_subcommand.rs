@@ -3,15 +3,14 @@ use std::{
 };
 use regex::Regex;
 use std::process::Command;
-use crate::args::{DownloadCollection, DownloadMods, DownloadSubcommand};
-pub fn handle_download_mods(game_id: String, mod_ids: Vec<String>) -> io::Result<()> {
-    /*println!("Game ID: {}", cmd.game_id);
-    println!("Mod IDs: {:?}", cmd.mod_ids); */
+use crate::{args::{DownloadCollection, DownloadMods, DownloadSubcommand}, commands::download_subcommand::DownloadError::NoSteamcmd};
+enum DownloadError {
+    NoSteamcmd,
+}
+fn download_mods(game_id: String, mod_ids: Vec<String>) -> Result<(), DownloadError> {
     if !Path::new("./steamcmd/steamcmd.sh").exists() {
-        return Err(io::Error::new(
-            io::ErrorKind::NotFound,
-            "Steamcmd not detected, please run reset subcommand."
-        ));
+        println!("Steamcmd not found, please run reset subcommand.");
+        return Err(NoSteamcmd);
     }
     let mut command = Command::new("./steamcmd/steamcmd.sh");
     command.arg("+force_install_dir");
@@ -28,11 +27,19 @@ pub fn handle_download_mods(game_id: String, mod_ids: Vec<String>) -> io::Result
     command.stdout(std::process::Stdio::inherit());
     command.stderr(std::process::Stdio::inherit());
 
-    command.status()?;
-    println!("If steamcmd reported success the mods should be under {}/steacmd/workdir/steamapps/workshop/content/{}", env::current_dir()?.display() ,&game_id);
+    command.status();
+    println!("If steamcmd reported success the mods should be under {}/steacmd/workdir/steamapps/workshop/content/{}", env::current_dir().expect("Error getting current dir").display() ,&game_id);
     return Ok(())
 }
-pub fn handle_download_collection(cmd: DownloadCollection) -> io::Result<()> {
+pub fn handle_download_mods(game_id: String, mod_ids: Vec<String>) -> Result<(), ()> {
+    // it might be better to print error mesages here instead of the function (?)
+    if download_mods(game_id, mod_ids).is_ok() {
+        return Ok(());
+    } else {
+        return Err(())
+    }
+}
+pub fn handle_download_collection(cmd: DownloadCollection) -> Result<(), ()> {
     //println!("{}", cmd.collection_url);
     //note: https://users.rust-lang.org/t/how-to-download-files-from-the-internet/54878
     let resp = reqwest::blocking::get(cmd.collection_url).expect("request failed");
@@ -46,8 +53,11 @@ pub fn handle_download_collection(cmd: DownloadCollection) -> io::Result<()> {
         .filter_map(|caps| caps.get(1)) 
         .map(|m| m.as_str().to_string())
         .collect();
-    handle_download_mods(cmd.game_id, ids);
-    return Ok(())
+    if download_mods(cmd.game_id, ids).is_ok() {
+        return Ok(());
+    } else {
+        return Err(())
+    }
 }
 pub fn run_download(subcommand: DownloadSubcommand) {
     match subcommand {
