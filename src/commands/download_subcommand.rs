@@ -3,15 +3,16 @@ use std::{
 };
 use regex::Regex;
 use std::process::Command;
-use crate::{args::{DownloadCollection, DownloadSubcommand}, commands::download_subcommand::DownloadError::{NoSteamcmd, SteamcmdExecuteError}};
+use crate::{args::{DownloadCollection, DownloadSubcommand}};
 pub enum DownloadError {
     NoSteamcmd,
     SteamcmdExecuteError,
+    SteamcmdStatusBad,
 }
 fn download_mods(game_id: String, mod_ids: Vec<String>) -> Result<(), DownloadError> {
     if !Path::new("./steamcmd/steamcmd.sh").exists() {
         println!("Steamcmd not found, please run reset subcommand.");
-        return Err(NoSteamcmd);
+        return Err(DownloadError::NoSteamcmd);
     }
     let mut command = Command::new("./steamcmd/steamcmd.sh");
     command.arg("+force_install_dir");
@@ -29,10 +30,17 @@ fn download_mods(game_id: String, mod_ids: Vec<String>) -> Result<(), DownloadEr
     command.stderr(std::process::Stdio::inherit());
     // Note: https://doc.rust-lang.org/std/process/struct.Command.html#method.status
     match command.status() {
-        Ok(status) => println!("Steamcmd exited with status: {status}"),
+        Ok(status) => {
+            if !status.success() {
+            println!("Steamcmd exited with status: {status}.");
+            println!("This is not normal, steamcmd returns 0 even if it fails to download the mods.");
+            println!("Please run reset subcommand and try again.");
+            return Err(DownloadError::SteamcmdStatusBad)
+            }
+        }
         Err(err) => {
             println!("Error: {}", err);
-            return Err(SteamcmdExecuteError)
+            return Err(DownloadError::SteamcmdExecuteError)
         }
     };
     println!("If steamcmd reported success the mods should be under {}/steacmd/workdir/steamapps/workshop/content/{}", env::current_dir().expect("Error getting current dir").display() ,&game_id);
