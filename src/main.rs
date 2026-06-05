@@ -1,24 +1,27 @@
-mod args;
-mod commands;
+// Note: https://gtk-rs.org/gtk4-rs/stable/latest/book/hello_world.html
+use gtk::prelude::*;
+use gtk::{Application, ApplicationWindow, glib};
 
-use args::WorkshopFetcherArgs;
-use clap::Parser;
+const APP_ID: &str = "io.github.Hydriam.Workshopfetcher-rs";
 
-use crate::{args::{EntityType}, commands::download_subcommand::run_download, commands::reset_subcommand::run_reset};
+fn main() -> glib::ExitCode {
+    // Create a new application
+    let app = Application::builder().application_id(APP_ID).build();
 
-fn main() {
-    let args = WorkshopFetcherArgs::parse();
+    // Connect to "activate" signal of `app`
+    app.connect_activate(build_ui);
 
-    match args.entity_type {
-        EntityType::Download(download) => {
-            run_download(download.command);
-        }
-        EntityType::Reset => {
-            match run_reset() {
-                Ok(_) => println!("Steamcmd is succesfully reseted."),
-                // TODO: Test if the error handling works good
-                Err(error) => println!("Error: {}", error)
-            };
-        }
-    }
+    // Run the application
+    app.run()
+}
+
+fn build_ui(app: &Application) {
+    // Create a window and set the title
+    let window = ApplicationWindow::builder()
+        .application(app)
+        .title("Workshop Fetcher")
+        .build();
+
+    // Present window
+    window.present();
 }
