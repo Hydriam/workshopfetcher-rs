@@ -1,12 +1,13 @@
-use gtk::{glib::clone, prelude::*};
-pub fn build_ui(app: &gtk::Application) {
-    let window = gtk::ApplicationWindow::builder()
+use gtk::{gio, glib::clone, prelude::*};
+use adw::{self, prelude::{AdwApplicationWindowExt, AdwDialogExt, AlertDialogExt, AlertDialogExtManual}};
+pub fn build_ui(app: &adw::Application) {
+    let window = adw::ApplicationWindow::builder()
         .application(app)
         .title("Workshop Fetcher")
         .default_width(600)
         .default_height(400)
         .build();
-    let stack = gtk::Stack::new();
+    let stack = adw::ViewStack::new();
     let mods_box = gtk::Box::new(gtk::Orientation::Horizontal, 6);
     mods_box.set_halign(gtk::Align::Center);
     mods_box.set_valign(gtk::Align::Center);
@@ -43,21 +44,29 @@ pub fn build_ui(app: &gtk::Application) {
         entry_add,
         #[weak]
         list_model,
+        #[weak]
+        window,
         move |_btn| {
             let text = entry_add.text();
+            if text == "" {
+                let dialog = adw::AlertDialog::new(Some("Mod AppID is missing"), Some("You need to specify the mod AppID"));
+                dialog.add_response("cancel", "Cancel");
+                dialog.set_default_response(Some("cancel"));
+                dialog.set_close_response("cancel");
+                dialog.present(Some(&window));
+                return;
+            } 
             list_model.append(&gtk::StringObject::new(&text));
             entry_add.set_text("");
         }
     ));
     buttons_box.append(&button_add);
-    let entry_gameid = gtk::Entry::builder().placeholder_text("AppID of the game").build();
-    buttons_box.append(&entry_gameid);
+    //let entry_gameid = gtk::Entry::builder().placeholder_text("AppID of the game").build();
+    //buttons_box.append(&entry_gameid);
     let button_download = gtk::Button::builder().label("Download mods").build();
     button_download.connect_clicked(clone!(
         #[weak]
         list_model,
-        #[weak]
-        entry_gameid,
         #[weak]
         window,
         move |_btn| {
@@ -76,10 +85,51 @@ pub fn build_ui(app: &gtk::Application) {
                 }
             }
             */
-            if entry_gameid.text() == "" {
+            /*if entry_gameid.text() == "" {
                 let dialog = gtk::AlertDialog::builder().message("You need to specify the game AppID").build();
                 dialog.show(Some(&window.clone()));
-            }
+            }*/
+            let ask_dialog = adw::AlertDialog::new(Some("Please specify the game AppID"), Some(""));
+            ask_dialog.add_response("continue", "Continue");
+            ask_dialog.set_default_response(Some("continue"));
+            let entry_gameid = gtk::Entry::builder().placeholder_text("AppID of the game").build();
+            ask_dialog.set_extra_child(Some(&entry_gameid));
+            ask_dialog.connect_response(
+                Some("continue"), 
+                clone!(
+                    #[weak]
+                    entry_gameid,
+                    #[weak]
+                    list_model,
+                    move |_, _| {
+                        if entry_gameid.text() == "" {
+                            //TODO: handle this
+                        }
+                        let mut vec = Vec::new();
+                        if let Some(item) = list_model.item(0) {
+                            //println!("{}", item.downcast::<gtk::StringObject>().unwrap().string());
+                            vec.push(item.downcast::<gtk::StringObject>().unwrap().string());
+                            let mut loop_item = 1;
+                            loop {
+                                if let Some(item) = list_model.item(loop_item) {
+                                    //println!("{}", item.downcast::<gtk::StringObject>().unwrap().string());
+                                    vec.push(item.downcast::<gtk::StringObject>().unwrap().string());
+                                    loop_item += 1;
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else {
+                            //TODO: handle this
+                        }
+                        //test:
+                        println!("{}", entry_gameid.text());
+                        for n in vec.into_iter() {
+                            println!("{}", n)
+                        }
+                    }
+                ));
+                ask_dialog.present(Some(&window));
         }
     ));
     buttons_box.append(&button_download);
@@ -107,12 +157,20 @@ pub fn build_ui(app: &gtk::Application) {
         window,
         move |_btn| {
             if entry_collection.text() == "" {
-                let dialog = gtk::AlertDialog::builder().message("You need to specify the collection URL").build();
-                dialog.show(Some(&window.clone()));
+                let dialog = adw::AlertDialog::new(Some("Collection URL is missing"), Some("You need to specify the game collection URL"));
+                dialog.add_response("cancel", "Cancel");
+                dialog.set_default_response(Some("cancel"));
+                dialog.set_close_response("cancel");
+                dialog.present(Some(&window));
+                return;
+                // return so it cant do both dialogs at once
             }
             if entry_gameid.text() == "" {
-                let dialog = gtk::AlertDialog::builder().message("You need to specify the game AppID").build();
-                dialog.show(Some(&window.clone()));
+                let dialog = adw::AlertDialog::new(Some("Game AppID is missing"), Some("You need to specify the game AppID"));
+                dialog.add_response("cancel", "Cancel");
+                dialog.set_default_response(Some("cancel"));
+                dialog.set_close_response("cancel");
+                dialog.present(Some(&window));
             }
         }
     ));
@@ -120,11 +178,13 @@ pub fn build_ui(app: &gtk::Application) {
     //
     stack.add_titled(&mods_box, Some("Download Mods"), "Download Mods");
     stack.add_titled(&collection_box, Some("Download Collection"), "Download Collection");
-    let stack_switcher = gtk::StackSwitcher::new();
+    let stack_switcher = adw::ViewSwitcher::new();
+    stack_switcher.set_policy(adw::ViewSwitcherPolicy::Wide);
     stack_switcher.set_stack(Some(&stack));
     let base_box = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    base_box.append(&adw::HeaderBar::new());
     base_box.append(&stack_switcher);
     base_box.append(&stack);
-    window.set_child(Some(&base_box));
+    window.set_content(Some(&base_box));
     window.present();
 }
